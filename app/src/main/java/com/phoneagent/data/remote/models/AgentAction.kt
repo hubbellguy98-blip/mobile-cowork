@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 
 enum class AgentActionType {
-    TAP, SWIPE, TYPE, PRESS_BACK, PRESS_HOME, OPEN_APP, SCROLL, WAIT, TASK_COMPLETE, TASK_FAILED
+    TAP, LONG_PRESS, SWIPE, TYPE, PRESS_BACK, PRESS_HOME, OPEN_APP, SCROLL, WAIT, TASK_COMPLETE, TASK_FAILED
 }
 
 data class AgentParams(
