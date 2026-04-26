@@ -4,20 +4,17 @@ import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-
-import com.phoneagent.service.PhoneAgentAccessibilityService
-import com.phoneagent.utils.AccessibilityUtils
-\n
+import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.app.Activity
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import com.phoneagent.service.ScreenCaptureService
+import com.phoneagent.service.PhoneAgentAccessibilityService
+import com.phoneagent.utils.AccessibilityUtils
 import android.os.Build
-
-import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -33,7 +30,7 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChatFragment : Fragment() {
-    
+
     private var _binding: FragmentChatBinding? = null
     private val binding get() = _binding!!
 
@@ -57,8 +54,6 @@ class ChatFragment : Fragment() {
         viewModel.onScreenCapturePermissionResult(result.resultCode, result.data)
     }
 
-
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -69,24 +64,23 @@ class ChatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         // Accessibility Check setup
         binding.btnEnableAccessibility.setOnClickListener {
             AccessibilityUtils.openAccessibilitySettings(requireContext())
-        }\n        setupRecyclerView()
+        }
+
+        setupRecyclerView()
         setupClickListeners()
         observeViewModel()
-        
+
         // Auto show keyboard when opened
         binding.etMessage.requestFocus()
         val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.showSoftInput(binding.etMessage, InputMethodManager.SHOW_IMPLICIT)
     }
 
-    private fun // Accessibility Check setup
-        binding.btnEnableAccessibility.setOnClickListener {
-            AccessibilityUtils.openAccessibilitySettings(requireContext())
-        }\n        setupRecyclerView() {
+    private fun setupRecyclerView() {
         messageAdapter = MessageAdapter()
         binding.rvMessages.apply {
             layoutManager = LinearLayoutManager(requireContext()).apply {
@@ -102,7 +96,7 @@ class ChatFragment : Fragment() {
             if (text.isNotBlank()) {
                 viewModel.sendMessage(text)
                 binding.etMessage.text?.clear()
-                
+
                 // Dismiss keyboard on send
                 val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(binding.etMessage.windowToken, 0)
@@ -119,8 +113,8 @@ class ChatFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewLifecycleOwner.lifecycleScope.
-
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.sensitiveActionPending.collect { action ->
                         if (action != null) {
@@ -138,6 +132,7 @@ class ChatFragment : Fragment() {
                         }
                     }
                 }
+
                 launch {
                     viewModel.needsScreenCapturePermission.collect { needsPermission ->
                         if (needsPermission && !ScreenCaptureService.isRunning()) {
@@ -146,8 +141,6 @@ class ChatFragment : Fragment() {
                     }
                 }
 
-                launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.messagesList.collect { messages ->
                         messageAdapter.submitList(messages) {
@@ -180,7 +173,6 @@ class ChatFragment : Fragment() {
         }
     }
 
-    
     private fun showScreenCaptureDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("Screen Capture Needed")
