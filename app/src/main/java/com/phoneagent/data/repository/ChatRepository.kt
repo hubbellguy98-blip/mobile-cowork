@@ -31,7 +31,7 @@ class ChatRepository @Inject constructor(
             role = "user",
             content = text
         )
-        conversationDao.insert(userEntity)
+        conversationDao.insertMessage(userEntity)
 
         // Convert bitmap
         val base64Image = if (screenshot != null) {
@@ -52,7 +52,7 @@ class ChatRepository @Inject constructor(
 
         if (result.isSuccess) {
             val action = result.getOrThrow()
-            
+
             // Save AI response
             val aiEntity = ConversationEntity(
                 sessionId = currentSessionId,
@@ -60,8 +60,8 @@ class ChatRepository @Inject constructor(
                 content = action.thought,
                 actionJson = Gson().toJson(action)
             )
-            conversationDao.insert(aiEntity)
-            
+            conversationDao.insertMessage(aiEntity)
+
             emit(action)
         } else {
             // Handle error case
@@ -74,7 +74,7 @@ class ChatRepository @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     fun getMessages(sessionId: String = currentSessionId): Flow<List<ConversationEntity>> {
-        return conversationDao.getAllBySession(sessionId).flowOn(Dispatchers.IO)
+        return conversationDao.getMessagesBySession(sessionId).flowOn(Dispatchers.IO)
     }
 
     suspend fun clearHistory() {
